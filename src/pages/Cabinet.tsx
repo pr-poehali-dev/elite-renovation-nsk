@@ -226,12 +226,19 @@ const Cabinet = () => {
                   <Input id="phone" value={user.phone || 'Не указан'} disabled className="mt-2" />
                 </div>
                 <Separator />
-                <p className="text-sm text-muted-foreground">
-                  Для изменения данных свяжитесь с нашим менеджером по телефону{' '}
-                  <a href="tel:+73832000000" className="text-accent hover:underline">
-                    +7 (383) 200-00-00
-                  </a>
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Для изменения данных свяжитесь с нашим менеджером:
+                  </p>
+                  <p className="text-sm">
+                    <a href="tel:+79995459383" className="text-accent hover:underline font-medium">
+                      +7 (999) 545-93-83
+                    </a>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Пн-Пт: 9:00 - 18:00
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
