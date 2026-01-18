@@ -1,0 +1,37 @@
+{
+  "tests": [
+    {
+      "name": "Send request successfully",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "fullName": "Иван Петров",
+        "email": "ivan@test.ru",
+        "phone": "+79991234567",
+        "area": 100,
+        "finishType": "premium",
+        "estimatedPrice": 4500000,
+        "message": "Хочу сделать ремонт"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Validate required fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "fullName": "",
+        "email": "test@test.ru"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

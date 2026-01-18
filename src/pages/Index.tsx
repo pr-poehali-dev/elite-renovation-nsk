@@ -5,12 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [area, setArea] = useState<string>('');
   const [finishType, setFinishType] = useState<string>('standard');
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedPortfolio, setSelectedPortfolio] = useState<any>(null);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const prices = {
     economy: 15000,
@@ -30,6 +40,75 @@ const Index = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
+    setMobileMenuOpen(false);
+  };
+
+  const portfolioItems = [
+    {
+      img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/4f64e06f-15f9-4a79-96fa-6932a40ab083.jpg',
+      title: 'Пентхаус 240 м²',
+      desc: 'Панорамные окна, мраморная отделка',
+      details: 'Роскошный пентхаус с панорамными окнами на весь Новосибирск. Использованы премиальные материалы: итальянский мрамор Calacatta, паркет из тикового дерева, дизайнерская сантехника Gessi.',
+      area: 240,
+      finishType: 'elite',
+      price: 18000000
+    },
+    {
+      img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/66edd709-c005-43ae-9ace-6aceaf6a82d7.jpg',
+      title: 'Кухня премиум',
+      desc: 'Итальянская мебель, золотые акценты',
+      details: 'Кухня-гостиная в стиле неоклассика. Итальянская мебель Scavolini, техника Miele, столешницы из кварцевого агломерата Caesarstone. Золотые акценты в фурнитуре и светильниках.',
+      area: 45,
+      finishType: 'premium',
+      price: 2025000
+    },
+    {
+      img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/94263044-6979-45e1-880f-883e7906c64a.jpg',
+      title: 'Ванная комната',
+      desc: 'Натуральный камень, SPA-зона',
+      details: 'Ванная комната с SPA-зоной. Отделка натуральным мрамором и ониксом с подсветкой. Система хромотерапии, тропический душ, джакузи Jacuzzi. Полы с подогревом.',
+      area: 18,
+      finishType: 'elite',
+      price: 1350000
+    },
+  ];
+
+  const handleSubmitRequest = async () => {
+    if (!formData.fullName || !formData.email || !formData.phone) {
+      toast({ title: 'Ошибка', description: 'Заполните все обязательные поля', variant: 'destructive' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/aeaa2455-cd4d-4dc9-adcf-04e079aad9f0', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          area: parseFloat(area) || null,
+          finishType: finishType,
+          estimatedPrice: calculatedPrice,
+          message: formData.message
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        toast({ title: 'Успешно!', description: 'Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.' });
+        setRequestDialogOpen(false);
+        setFormData({ fullName: '', email: '', phone: '', message: '' });
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось отправить заявку', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Проблема с подключением к серверу', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -39,7 +118,7 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-accent">Elite Renovation</h1>
-            <div className="hidden md:flex gap-8">
+            <div className="hidden md:flex gap-8 items-center">
               {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Процесс', 'Отзывы', 'Контакты'].map((item) => (
                 <button
                   key={item}
@@ -49,7 +128,35 @@ const Index = () => {
                   {item}
                 </button>
               ))}
+              <Button
+                variant="outline"
+                className="border-accent text-accent hover:bg-accent hover:text-primary"
+                onClick={() => window.location.href = '/auth'}
+              >
+                <Icon name="User" size={18} className="mr-2" />
+                Войти
+              </Button>
             </div>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden text-accent">
+                  <Icon name="Menu" size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-primary border-accent/20">
+                <div className="flex flex-col gap-6 mt-8">
+                  {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Процесс', 'Отзывы', 'Контакты'].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => scrollToSection(item.toLowerCase())}
+                      className="text-left text-lg text-primary-foreground hover:text-accent transition-colors"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>
@@ -135,25 +242,10 @@ const Index = () => {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/4f64e06f-15f9-4a79-96fa-6932a40ab083.jpg',
-                title: 'Пентхаус 240 м²',
-                desc: 'Панорамные окна, мраморная отделка',
-              },
-              {
-                img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/66edd709-c005-43ae-9ace-6aceaf6a82d7.jpg',
-                title: 'Кухня премиум',
-                desc: 'Итальянская мебель, золотые акценты',
-              },
-              {
-                img: 'https://cdn.poehali.dev/projects/c18948a0-4773-449a-acb6-a4c9f858b197/files/94263044-6979-45e1-880f-883e7906c64a.jpg',
-                title: 'Ванная комната',
-                desc: 'Натуральный камень, SPA-зона',
-              },
-            ].map((project, idx) => (
+            {portfolioItems.map((project, idx) => (
               <Card
                 key={idx}
+                onClick={() => setSelectedPortfolio(project)}
                 className="overflow-hidden group cursor-pointer border-accent/20 hover:shadow-2xl transition-all duration-300"
               >
                 <div className="relative overflow-hidden">
@@ -162,7 +254,11 @@ const Index = () => {
                     alt={project.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                    <Button className="bg-accent text-primary hover:bg-accent/90">
+                      Подробнее
+                    </Button>
+                  </div>
                 </div>
                 <CardContent className="p-6">
                   <h3 className="text-2xl font-bold text-primary mb-2">{project.title}</h3>
@@ -378,7 +474,10 @@ const Index = () => {
                 <p className="text-xl text-primary">Новосибирск, ул. Красный проспект, 1</p>
               </div>
             </div>
-            <Button className="mt-8 bg-accent text-primary hover:bg-accent/90 text-lg px-8 py-6">
+            <Button 
+              className="mt-8 bg-accent text-primary hover:bg-accent/90 text-lg px-8 py-6"
+              onClick={() => setRequestDialogOpen(true)}
+            >
               Заказать звонок
             </Button>
           </div>
@@ -392,6 +491,107 @@ const Index = () => {
           <p className="text-sm opacity-75">© 2024 Все права защищены</p>
         </div>
       </footer>
+
+      {/* Portfolio Modal */}
+      <Dialog open={!!selectedPortfolio} onOpenChange={() => setSelectedPortfolio(null)}>
+        <DialogContent className="max-w-3xl">
+          {selectedPortfolio && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-3xl text-primary">{selectedPortfolio.title}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <img
+                  src={selectedPortfolio.img}
+                  alt={selectedPortfolio.title}
+                  className="w-full h-96 object-cover rounded-lg"
+                />
+                <div className="grid md:grid-cols-3 gap-4 text-center">
+                  <Card className="p-4 border-accent/20">
+                    <p className="text-sm text-muted-foreground mb-1">Площадь</p>
+                    <p className="text-2xl font-bold text-primary">{selectedPortfolio.area} м²</p>
+                  </Card>
+                  <Card className="p-4 border-accent/20">
+                    <p className="text-sm text-muted-foreground mb-1">Тип отделки</p>
+                    <p className="text-2xl font-bold text-primary capitalize">{selectedPortfolio.finishType}</p>
+                  </Card>
+                  <Card className="p-4 border-accent/20">
+                    <p className="text-sm text-muted-foreground mb-1">Стоимость</p>
+                    <p className="text-2xl font-bold text-primary">{selectedPortfolio.price.toLocaleString('ru-RU')} ₽</p>
+                  </Card>
+                </div>
+                <p className="text-muted-foreground leading-relaxed">{selectedPortfolio.details}</p>
+                <Button
+                  className="w-full bg-accent text-primary hover:bg-accent/90"
+                  onClick={() => {
+                    setSelectedPortfolio(null);
+                    setRequestDialogOpen(true);
+                  }}
+                >
+                  Заказать похожий проект
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Form Dialog */}
+      <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-primary">Оставить заявку</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="fullName">ФИО *</Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                placeholder="Иван Иванов"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="ivan@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="phone">Телефон *</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+7 (999) 123-45-67"
+              />
+            </div>
+            <div>
+              <Label htmlFor="message">Сообщение</Label>
+              <Textarea
+                id="message"
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                placeholder="Расскажите о ваших пожеланиях..."
+                rows={4}
+              />
+            </div>
+            <Button
+              className="w-full bg-accent text-primary hover:bg-accent/90"
+              onClick={handleSubmitRequest}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
