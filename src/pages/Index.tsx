@@ -20,6 +20,8 @@ const Index = () => {
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const { toast } = useToast();
 
   const prices = {
@@ -42,6 +44,33 @@ const Index = () => {
     element?.scrollIntoView({ behavior: 'smooth' });
     setMobileMenuOpen(false);
   };
+
+  const ownerListings = [
+    {
+      title: 'Трёхкомнатная квартира 85 м²',
+      location: 'ЖК «Горский», Красный проспект',
+      area: 85,
+      budget: '1 500 000 - 2 000 000',
+      contact: '+7 (999) 111-22-33',
+      description: 'Требуется качественный ремонт под ключ. Предпочтение — стиль неоклассика.',
+    },
+    {
+      title: 'Двухкомнатная квартира 62 м²',
+      location: 'ЖК «Европейский берег»',
+      area: 62,
+      budget: '900 000 - 1 200 000',
+      contact: '+7 (999) 222-33-44',
+      description: 'Новостройка, черновая отделка. Нужен дизайн-проект и полный ремонт.',
+    },
+    {
+      title: 'Студия 42 м²',
+      location: 'ЖК «Панорама», Плющихинский жилмассив',
+      area: 42,
+      budget: '600 000 - 800 000',
+      contact: '+7 (999) 333-44-55',
+      description: 'Ремонт для сдачи в аренду. Современный минималистичный стиль.',
+    },
+  ];
 
   const portfolioItems = [
     {
@@ -111,6 +140,20 @@ const Index = () => {
     }
   };
 
+  const handleSubscribe = async () => {
+    if (!subscribeEmail || !subscribeEmail.includes('@')) {
+      toast({ title: 'Ошибка', description: 'Введите корректный email', variant: 'destructive' });
+      return;
+    }
+
+    setIsSubscribing(true);
+    setTimeout(() => {
+      toast({ title: 'Успешно!', description: 'Вы подписались на рассылку новостей и акций' });
+      setSubscribeEmail('');
+      setIsSubscribing(false);
+    }, 500);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Навигация */}
@@ -119,7 +162,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-accent">Elite Renovation</h1>
             <div className="hidden md:flex gap-8 items-center">
-              {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Процесс', 'Отзывы', 'Контакты'].map((item) => (
+              {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Объявления', 'Оплата', 'Контакты'].map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
@@ -145,7 +188,7 @@ const Index = () => {
               </SheetTrigger>
               <SheetContent side="right" className="bg-primary border-accent/20">
                 <div className="flex flex-col gap-6 mt-8">
-                  {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Процесс', 'Отзывы', 'Контакты'].map((item) => (
+                  {['Главная', 'О компании', 'Портфолио', 'Услуги', 'Объявления', 'Оплата', 'Контакты'].map((item) => (
                     <button
                       key={item}
                       onClick={() => scrollToSection(item.toLowerCase())}
@@ -373,8 +416,114 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Объявления от собственников */}
+      <section id="объявления" className="py-24 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-5xl font-bold text-primary mb-6">Объявления от собственников</h2>
+            <Separator className="w-24 mx-auto mb-8 bg-accent h-1" />
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Владельцы квартир ищут подрядчиков для ремонта. Свяжитесь напрямую!
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {ownerListings.map((listing, idx) => (
+              <Card key={idx} className="border-accent/20 hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl text-primary">{listing.title}</CardTitle>
+                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-2">
+                    <Icon name="MapPin" size={16} />
+                    {listing.location}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{listing.description}</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Площадь:</span>
+                      <span className="font-medium text-primary">{listing.area} м²</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Бюджет:</span>
+                      <span className="font-medium text-accent">{listing.budget} ₽</span>
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full bg-accent text-primary hover:bg-accent/90"
+                    onClick={() => window.open(`tel:${listing.contact.replace(/\s+/g, '')}`, '_self')}
+                  >
+                    <Icon name="Phone" size={18} className="mr-2" />
+                    {listing.contact}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Оплата по картам */}
+      <section id="оплата" className="py-24 bg-card">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-5xl font-bold text-primary mb-6">Оплата ремонта</h2>
+            <Separator className="w-24 mx-auto mb-8 bg-accent h-1" />
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card className="border-accent/20 p-8">
+                <Icon name="CreditCard" className="text-accent mb-4" size={64} />
+                <h3 className="text-2xl font-bold text-primary mb-4">Банковские карты</h3>
+                <p className="text-muted-foreground mb-6">
+                  Принимаем все виды банковских карт: Visa, Mastercard, МИР. Безопасная оплата онлайн.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-accent" />
+                    Мгновенное зачисление
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-accent" />
+                    Защита данных по стандарту PCI DSS
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Icon name="CheckCircle" size={16} className="text-accent" />
+                    Рассрочка до 12 месяцев
+                  </li>
+                </ul>
+              </Card>
+              <Card className="border-accent/20 p-8">
+                <Icon name="Wallet" className="text-accent mb-4" size={64} />
+                <h3 className="text-2xl font-bold text-primary mb-4">Поэтапная оплата</h3>
+                <p className="text-muted-foreground mb-6">
+                  Оплачивайте ремонт поэтапно после выполнения работ. Гибкий график платежей.
+                </p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center p-3 bg-accent/5 rounded">
+                    <span className="text-muted-foreground">Аванс</span>
+                    <span className="font-bold text-primary">30%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-accent/5 rounded">
+                    <span className="text-muted-foreground">После демонтажа</span>
+                    <span className="font-bold text-primary">20%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-accent/5 rounded">
+                    <span className="text-muted-foreground">После отделки</span>
+                    <span className="font-bold text-primary">30%</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-accent/5 rounded">
+                    <span className="text-muted-foreground">Сдача объекта</span>
+                    <span className="font-bold text-primary">20%</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Процесс */}
-      <section id="процесс" className="py-24 bg-card">
+      <section id="процесс" className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-5xl font-bold text-primary mb-6">Процесс работы</h2>
@@ -405,7 +554,7 @@ const Index = () => {
       </section>
 
       {/* Отзывы */}
-      <section id="отзывы" className="py-24 bg-background">
+      <section id="отзывы" className="py-24 bg-card">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-5xl font-bold text-primary mb-6">Отзывы клиентов</h2>
@@ -445,8 +594,36 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Подписка */}
+      <section className="py-16 bg-primary">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-3xl font-bold text-accent mb-4">Подпишитесь на новости</h3>
+            <p className="text-primary-foreground mb-6">
+              Получайте эксклюзивные предложения и советы по ремонту
+            </p>
+            <div className="flex gap-4 max-w-md mx-auto">
+              <Input
+                type="email"
+                placeholder="Ваш email"
+                value={subscribeEmail}
+                onChange={(e) => setSubscribeEmail(e.target.value)}
+                className="bg-card"
+              />
+              <Button
+                className="bg-accent text-primary hover:bg-accent/90 px-8"
+                onClick={handleSubscribe}
+                disabled={isSubscribing}
+              >
+                {isSubscribing ? 'Отправка...' : 'Подписаться'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Контакты */}
-      <section id="контакты" className="py-24 bg-card">
+      <section id="контакты" className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-5xl font-bold text-primary mb-6">Контакты</h2>
@@ -487,6 +664,17 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Floating Messenger Button */}
+      <a
+        href="https://t.me/yourusername"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-accent hover:bg-accent/90 text-primary rounded-full p-4 shadow-2xl transition-all hover:scale-110"
+        aria-label="Написать в Telegram"
+      >
+        <Icon name="MessageCircle" size={32} />
+      </a>
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-8">
