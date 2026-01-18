@@ -486,10 +486,7 @@ const Index = () => {
                     <Icon name="CheckCircle" size={16} className="text-accent" />
                     Защита данных по стандарту PCI DSS
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Icon name="CheckCircle" size={16} className="text-accent" />
-                    Рассрочка до 12 месяцев
-                  </li>
+
                 </ul>
               </Card>
               <Card className="border-accent/20 p-8">
